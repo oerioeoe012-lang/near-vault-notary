@@ -1,6 +1,7 @@
 # vault-notary
 
 [![CI](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/ci.yml/badge.svg)](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/ci.yml)
+[![Verify deployed contract](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/verify-deployed.yml/badge.svg)](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/verify-deployed.yml)
 
 **Verifiable provenance for knowledge and data, on NEAR.**
 Publish selected notes from an Obsidian vault to IPFS, or notarize dataset and
@@ -94,6 +95,8 @@ computed by streaming, so files of any size work.
 | Network | NEAR **testnet** |
 | Registry contract | [`registry.jan-solver.testnet`](https://testnet.nearblocks.io/address/registry.jan-solver.testnet) |
 | Author account (demo) | `jan-solver.testnet` |
+| Source of deployed code | commit [`06a87f2`](https://github.com/oerioeoe012-lang/near-vault-notary/tree/06a87f2489db06b19d4ba6fea8b53474ec0b3668), reproducible build |
+| Code hash | `8hhc8LuQvPanePb3mrzp94vzCLW3W1woc8BRkgBRtM9w` (sha256 `726ef42a…3e97ce`) |
 
 Example transactions from the demo run:
 [note v1](https://testnet.nearblocks.io/txns/7cj56xoTAfdPb9bE2L6oVNUp5B5cxRwRRoVxbKumfxKv),
@@ -101,6 +104,31 @@ Example transactions from the demo run:
 [schema v1](https://testnet.nearblocks.io/txns/ABba3j5rinCjbwX3WJzc8JBLyqnkXYDMTxkk4FoHN5wv),
 [schema v2](https://testnet.nearblocks.io/txns/AK8DCPWrCgco9xsvPC1iPpbFEad3k4LRYBjEvk4vkdPL),
 [rejected write by a foreign account](https://testnet.nearblocks.io/txns/6zXKiX4upwBro4Qguu3CYbkxcXstccckKFmFxir7ne9C).
+
+### The contract itself is verifiable too
+
+The deployed Wasm is a **reproducible build** (NEP-330): it was built in the
+pinned Docker image `sourcescan/cargo-near:0.23.0-rust-1.99.1` (digest in
+`contract/Cargo.toml`) and the contract reports its own origin:
+
+```bash
+near contract call-function as-read-only registry.jan-solver.testnet \
+  contract_source_metadata json-args {} network-config testnet now
+```
+
+Anyone with Docker can rebuild it from that commit and compare it with the
+code on chain:
+
+```bash
+near contract verify deployed-at registry.jan-solver.testnet network-config testnet now
+# -> "The code obtained from the contract account ID and the code calculated
+#     from the repository are the same."
+```
+
+The [Verify deployed contract](.github/workflows/verify-deployed.yml) workflow
+runs exactly this every day on a fresh GitHub runner;
+[Reproducible contract build](.github/workflows/reproducible-build.yml)
+publishes the Wasm and its checksum for every contract change.
 
 Try it without any account or key:
 
@@ -137,7 +165,7 @@ Read-only commands (`verify`, `history`) only need `NOTARY_CONTRACT`.
    near account create-account fund-myself registry.YOU.testnet '3 NEAR' \
      autogenerate-new-keypair save-to-keychain sign-as YOU.testnet \
      network-config testnet sign-with-keychain send
-   cd contract && cargo near build non-reproducible-wasm
+   cd contract && cargo near build reproducible-wasm   # needs Docker; or non-reproducible-wasm
    near contract deploy registry.YOU.testnet use-file target/near/note_registry.wasm \
      without-init-call network-config testnet sign-with-keychain send
    ```
@@ -171,6 +199,8 @@ The tool refuses any account that does not end in `.testnet`.
 | **NEAR testnet** | all transactions; faucet-funded accounts |
 | **near-sdk-rs 5.30** (Rust) | the registry contract: `#[near(contract_state)]`, `store::LookupMap`, `require!`, `env::predecessor_account_id`, `env::block_timestamp`, `env::block_height`, `log!` |
 | **cargo-near 0.23** | building the contract to Wasm (with embedded ABI) |
+| **Reproducible builds / NEP-330** (`cargo near build reproducible-wasm`, `sourcescan/cargo-near` image) | the deployed Wasm can be rebuilt byte-for-byte from the repo; `contract_source_metadata` names commit and image |
+| **`near contract verify`** (near-cli-rs) | daily CI check that the deployed code matches the source |
 | **near-cli-rs 0.31** | creating accounts, sub-account, deploying, adding access keys |
 | **Faucet account creation** (`sponsor-by-faucet-service`) | the author account |
 | **Sub-accounts** (`registry.jan-solver.testnet`) | the registry account, owned by the author account |
@@ -190,7 +220,7 @@ Non-NEAR components: IPFS via Pinata (storage), Python (CLI).
   should attach a storage deposit (otherwise anyone can fill the registry).
 * Wikilinks inside code blocks are rewritten like any others.
 * Next: authors pay their own storage, an Obsidian plugin, a reader that lives on
-  IPFS itself, retraction markers, reproducible contract builds, multi-provider
+  IPFS itself, retraction markers, multi-provider
   pinning, and for data teams: notarizing data contracts directly from CI/dbt
   runs, with `verify --file` as a pipeline gate.
 
