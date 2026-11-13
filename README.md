@@ -115,7 +115,7 @@ Requirements: Python ≥ 3.11. For your own registry: Rust,
 [`near-cli-rs`](https://docs.near.org/tools/cli).
 
 ```bash
-git clone <this repo> && cd near-vault-notary
+git clone https://github.com/oerioeoe012-lang/near-vault-notary.git && cd near-vault-notary
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest            # 40 tests, no network needed
 cp .env.example .env        # then fill in, see below
