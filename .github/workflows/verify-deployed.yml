@@ -1,0 +1,25 @@
+name: Verify deployed contract
+
+# Rebuilds the contract from the source commit recorded on chain (NEP-330
+# contract_source_metadata) in the pinned Docker image, and checks that the
+# result is byte-identical to the code deployed at registry.jan-solver.testnet.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install near-cli-rs 0.31.1
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/near/near-cli-rs/releases/download/v0.31.1/near-cli-rs-installer.sh | sh
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: near contract verify
+        run: near contract verify deployed-at registry.jan-solver.testnet network-config testnet now
