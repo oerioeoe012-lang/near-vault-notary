@@ -1,5 +1,7 @@
 # vault-notary
 
+[![CI](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/ci.yml/badge.svg)](https://github.com/oerioeoe012-lang/near-vault-notary/actions/workflows/ci.yml)
+
 **Verifiable provenance for knowledge and data, on NEAR.**
 Publish selected notes from an Obsidian vault to IPFS, or notarize dataset and
 schema files without uploading them, and let anyone check *which account
