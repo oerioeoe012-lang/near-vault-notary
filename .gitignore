@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+contract/target/
+.near-credentials/
+*.json.key
+
+# local demo copy of the example vault
+demo-run/

@@ -1,0 +1,10 @@
+{
+  "dataset": "acme/orders",
+  "owner": "data-platform",
+  "columns": {
+    "order_id": {"type": "int64", "nullable": false},
+    "customer_id": {"type": "string", "nullable": false},
+    "total_eur": {"type": "decimal(10,2)", "nullable": false}
+  },
+  "sla": {"freshness_hours": 24}
+}
