@@ -1,0 +1,36 @@
+name: Reproducible contract build
+
+on:
+  push:
+    branches: [main]
+    paths: ["contract/**", ".github/workflows/reproducible-build.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-near 0.23.0
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/near/cargo-near/releases/download/cargo-near-v0.23.0/cargo-near-installer.sh | sh
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: Build in pinned Docker image (NEP-330)
+        working-directory: contract
+        run: cargo near build reproducible-wasm
+      - name: Checksum
+        working-directory: contract/target/near
+        run: |
+          sha256sum note_registry.wasm | tee note_registry.wasm.sha256
+          echo "### note_registry.wasm" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`$(cat note_registry.wasm.sha256)\`" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: note_registry-reproducible
+          path: |
+            contract/target/near/note_registry.wasm
+            contract/target/near/note_registry.wasm.sha256

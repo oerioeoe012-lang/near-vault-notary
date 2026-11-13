@@ -3,6 +3,16 @@ name = "note_registry"
 version = "0.1.0"
 edition = "2021"
 description = "Provenance registry for published notes: note id -> chain of IPFS CIDs"
+license = "MIT"
+repository = "https://github.com/oerioeoe012-lang/near-vault-notary"
+
+# Reproducible build (NEP-330): `cargo near build reproducible-wasm` builds inside
+# this pinned Docker image, so anyone can rebuild the exact deployed Wasm.
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.23.0-rust-1.99.1"
+image_digest = "sha256:8013f039e8005627f10ae66b5519d1a6eeeed7d7aef4b5067d5e9a86c4302fcc"
+passed_env = []
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
