@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 VN=.venv/bin/vault-notary
-step() { echo; printf '\033[1;36m### %s\033[0m' "$1"; read -r _; }
+step() { echo; printf '\033[1;36m### %s\033[0m' "$1"; if [ -t 0 ]; then read -r _; else echo; fi; }
 
 rm -rf demo-run && mkdir demo-run
 cp -R examples/demo-vault demo-run/vault && cp -R examples/data demo-run/data
